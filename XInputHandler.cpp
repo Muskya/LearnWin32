@@ -6,25 +6,40 @@
 
 #pragma comment(lib, "XInput.lib") 
 
+class XboxController {
+private:
+    // To store the current state of the controller 
+    XINPUT_STATE controllerState;
+    int controllerIndex;
+public:
+    inline XboxController() noexcept {
+        controllerIndex = 0;
+        XInputGetState(controllerIndex, &controllerState);
+    }
+
+    // INPUT
+    bool checkButtonPressed(WORD button) {
+        return (controllerState.Gamepad.wButtons & button) != 0;
+    }
+    void getState() {
+        ZeroMemory(&controllerState, sizeof(XINPUT_STATE));
+        XInputGetState(controllerIndex, &controllerState);
+    }
+};
+
 int main()
 {
-    DWORD dwResult;
-    for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
-    {
-        XINPUT_STATE state;
-        ZeroMemory(&state, sizeof(XINPUT_STATE));
-        // Simply get the state of the controller from XInput.
-        dwResult = XInputGetState(i, &state);
-
-        if (dwResult == ERROR_SUCCESS)
-        {
-            // Controller is connected
-            std::cout << "Your controller is connected" << std::endl;
+    XboxController x1;
+    bool isFinished = false;
+    while (!isFinished) {
+        x1.getState();
+        if (x1.checkButtonPressed(XINPUT_GAMEPAD_A)) {
+            std::cout << "A IS PRESSED" << std::endl;
+            std::cout << "------------" << std::endl;
         }
-        else
-        {
-            // Controller is not connected
-            std::cout << "Your controller is not connected" << std::endl;
+        else if (x1.checkButtonPressed(XINPUT_GAMEPAD_B)) {
+            std::cout << "B PRESSED, EXITING." << std::endl;
+            isFinished = true;
         }
     }
 }
